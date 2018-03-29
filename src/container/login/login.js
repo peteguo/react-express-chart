@@ -38,6 +38,9 @@ class Login extends React.Component{
     }
 
     render() {
+
+       // console.log(this.props)
+
         return(
             <div>
                 {this.props.redirectTo&&this.props.redirectTo!='/login' ? <Redirect to={this.props.redirectTo} /> : null}

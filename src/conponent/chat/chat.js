@@ -1,14 +1,14 @@
 import React from 'react'
 import io from 'socket.io-client'
-import {List,InputItem} from 'antd-mobile'
+import {List,InputItem,NavBar} from 'antd-mobile'
 import {connect} from 'react-redux'
-import {getMsgList,sendMsg} from '../../redux/chat.redux'
+import {getMsgList,sendMsg,recvMsg} from '../../redux/chat.redux'
 
 const socket = io('ws://localhost:9093')
 
 @connect(
     state =>state,
-    {getMsgList,sendMsg}
+    {getMsgList,sendMsg,recvMsg}
 )
 
 class Chat extends React.Component{
@@ -17,29 +17,52 @@ class Chat extends React.Component{
         this.state={text:'',msg:[]}
     }
 
-    componentDidMount() {
+    /*componentDidMount() {
         this.props.getMsgList()
-        /*socket.on('recvmsg', (data)=> {
+        this.props.recvMsg()
+        /!*socket.on('recvmsg', (data)=> {
             this.setState({
                 msg: [...this.state.msg,data.text]
             })
-        })*/
-    }
+        })*!/
+    }*/
 
     handleSubmit() {
         //socket.emit('sendmsg',{text:this.state.text})
         //this.setState({text:''})
         const from = this.props.user._id
         const to = this.props.match.params.user
-        const msg = this.props.msg
+        const msg = this.state.text
         this.props.sendMsg({from,to,msg})
+        this.setState({text:''})
     }
     render() {
         console.log(this.props)
+        const user = this.props.match.params.user
+        const Item = List.Item
         return (
             <div>
-                {this.state.msg.map(v =>{
-                    return <p key={v}>{v}</p>
+                <NavBar mode="dark">
+                    {this.props.match.params.user}
+                </NavBar>
+                {this.props.chat.chatmsg.map(v =>{
+                    return v.from == user?(
+                        <List key={v._id}>
+                            <Item
+                            >{v.content}</Item>
+                        </List>
+                      /*  <p key={v._id}>对方发来的：{v.content}</p>*/
+                    ):(
+                       <List key={v._id}>
+                            <Item
+                                className='chat-me'
+                                extra={'avatar'}
+
+                            >{v.content}</Item>
+                        </List>
+                        /*<p key={v._id}>我发的：{v.content}</p>*/
+                    )
+
                 })}
                 <div className="stick-footer">
                     <List>
@@ -51,7 +74,6 @@ class Chat extends React.Component{
                         }}
                             extra={<span onClick={()=>this.handleSubmit()}>发送</span>}
                         >
-                            信息
                         </InputItem>
                     </List>
                 </div>
